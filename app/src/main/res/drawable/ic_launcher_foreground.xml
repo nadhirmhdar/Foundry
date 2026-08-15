@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Center Process & Venture Growth Nodes -->
+    <path
+        android:pathData="M34,74 L54,34 L74,74 L54,62 Z"
+        android:strokeWidth="2.5"
+        android:strokeColor="#00F5D4"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="34"
+                android:startY="34"
+                android:endX="74"
+                android:endY="74"
+                android:type="linear">
+                <item android:color="#4D00F5D4" android:offset="0.0" />
+                <item android:color="#9900BBF9" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Upward Innovation Arrow / Prism -->
+    <path
+        android:pathData="M54,28 L54,52 M46,36 L54,28 L62,36"
+        android:strokeWidth="3.5"
+        android:strokeColor="#FFD166"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Process Connected Micro-Nodes -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,28m-3,0a3,3 0 1,1 6,0a3,3 0 1,1 -6,0" />
+    <path
+        android:fillColor="#00F5D4"
+        android:pathData="M34,74m-3.5,0a3.5,3.5 0 1,1 7,0a3.5,3.5 0 1,1 -7,0" />
+    <path
+        android:fillColor="#00BBF9"
+        android:pathData="M74,74m-3.5,0a3.5,3.5 0 1,1 7,0a3.5,3.5 0 1,1 -7,0" />
+    <path
+        android:fillColor="#FFD166"
+        android:pathData="M54,62m-2.5,0a2.5,2.5 0 1,1 5,0a2.5,2.5 0 1,1 -5,0" />
+
+    <!-- Dynamic Flow Accents -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M38,54 Q46,46 50,46"
+        android:strokeWidth="1.5"
+        android:strokeColor="#80FFFFFF"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M70,54 Q62,46 58,46"
+        android:strokeWidth="1.5"
+        android:strokeColor="#80FFFFFF"
+        android:strokeLineCap="round" />
+</vector>

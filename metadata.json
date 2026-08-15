@@ -1,0 +1,6 @@
+{
+  "name": "ProcessFoundry",
+  "description": "Continuous intelligence platform analyzing enterprise ERP bottlenecks, automation friction, and human QC limits to architect venture solutions, pitch decks, and valuation reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
