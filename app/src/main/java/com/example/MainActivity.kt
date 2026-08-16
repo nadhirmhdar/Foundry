@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ui.components.CognitiveLoadBriefingDialog
 import com.example.ui.components.PdfReportViewerDialog
 import com.example.ui.screens.*
 import com.example.ui.theme.*
@@ -157,6 +158,48 @@ fun ProcessFoundryApp(viewModel: MainViewModel) {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
+                        // AI Studio Hub Trigger (Gemini 3.1 Pro Thinking, Flash Image, Veo 3 Video)
+                        Surface(
+                            shape = CircleShape,
+                            color = SophisticatedSurface,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, SophisticatedLavender.copy(alpha = 0.6f))
+                        ) {
+                            IconButton(
+                                onClick = { viewModel.openAiStudioHub() },
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .testTag("top_ai_studio_hub_button")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AutoAwesome,
+                                    contentDescription = "AI Studio Media Hub",
+                                    tint = SophisticatedLavender,
+                                    modifier = Modifier.size(19.dp)
+                                )
+                            }
+                        }
+
+                        // 10-Point Cognitive Load Briefing Trigger
+                        Surface(
+                            shape = CircleShape,
+                            color = SophisticatedSurface,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, SophisticatedLavender.copy(alpha = 0.5f))
+                        ) {
+                            IconButton(
+                                onClick = { viewModel.setCognitiveLoadBriefingVisible(true) },
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .testTag("top_cognitive_load_button")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Psychology,
+                                    contentDescription = "10-Point Cognitive Load Briefing",
+                                    tint = SophisticatedLavender,
+                                    modifier = Modifier.size(19.dp)
+                                )
+                            }
+                        }
+
                         // PDF Investment Memo Preview
                         Surface(
                             shape = CircleShape,
@@ -290,11 +333,18 @@ fun ProcessFoundryApp(viewModel: MainViewModel) {
                         onToggleLiveScanner = { viewModel.toggleLiveScanner() },
                         onOpenAiDiagnosis = { viewModel.showAiPromptDialog(true) },
                         onNavigateToArchitect = { viewModel.selectTab(NavigationTab.ARCHITECT) },
+                        selectedDepartment = uiState.selectedDepartmentFilter,
+                        selectedPriority = uiState.selectedPriorityFilter,
+                        onDepartmentFilterChange = { viewModel.setDepartmentFilter(it) },
+                        onPriorityFilterChange = { viewModel.setPriorityFilter(it) },
+                        onResetAllFilters = { viewModel.resetAllFilters() },
                         marketFeed = uiState.marketFeed,
                         comparativeRatios = uiState.comparativeRatios,
                         isMarketFeedRefreshing = uiState.isMarketFeedRefreshing,
                         onRefreshMarketBenchmarks = { viewModel.refreshMarketBenchmarks() },
-                        onOpenPdfPreview = { viewModel.setPdfPreviewVisible(true) }
+                        onOpenPdfPreview = { viewModel.setPdfPreviewVisible(true) },
+                        onOpenCognitiveBriefing = { viewModel.setCognitiveLoadBriefingVisible(true) },
+                        onOpenAiStudio = { tab -> viewModel.openAiStudioHub(tab) }
                     )
                 }
                 NavigationTab.ARCHITECT -> {
@@ -306,7 +356,9 @@ fun ProcessFoundryApp(viewModel: MainViewModel) {
                         onNavigateToValuation = { viewModel.selectTab(NavigationTab.VALUATION) },
                         onCopyMarkdown = onSharePitchDeckReport,
                         onOpenAiDiagnosis = { viewModel.showAiPromptDialog(true) },
-                        onOpenPdfPreview = { viewModel.setPdfPreviewVisible(true) }
+                        onOpenPdfPreview = { viewModel.setPdfPreviewVisible(true) },
+                        onOpenCognitiveBriefing = { viewModel.setCognitiveLoadBriefingVisible(true) },
+                        onOpenAiStudio = { tab -> viewModel.openAiStudioHub(tab) }
                     )
                 }
                 NavigationTab.PITCH_DECK -> {
@@ -319,7 +371,8 @@ fun ProcessFoundryApp(viewModel: MainViewModel) {
                         onPreviousSlide = { viewModel.previousSlide() },
                         onTogglePresenterMode = { viewModel.setPresenterMode(it) },
                         onExportMarkdown = onSharePitchDeckReport,
-                        onOpenPdfPreview = { viewModel.setPdfPreviewVisible(true) }
+                        onOpenPdfPreview = { viewModel.setPdfPreviewVisible(true) },
+                        onOpenAiStudio = { tab -> viewModel.openAiStudioHub(tab) }
                     )
                 }
                 NavigationTab.VALUATION -> {
@@ -336,7 +389,9 @@ fun ProcessFoundryApp(viewModel: MainViewModel) {
                         comparativeRatios = uiState.comparativeRatios,
                         isMarketFeedRefreshing = uiState.isMarketFeedRefreshing,
                         onRefreshMarketBenchmarks = { viewModel.refreshMarketBenchmarks() },
-                        onOpenPdfPreview = { viewModel.setPdfPreviewVisible(true) }
+                        onOpenPdfPreview = { viewModel.setPdfPreviewVisible(true) },
+                        onOpenCognitiveBriefing = { viewModel.setCognitiveLoadBriefingVisible(true) },
+                        onNavigateToArchitect = { viewModel.selectTab(NavigationTab.ARCHITECT) }
                     )
                 }
                 NavigationTab.VAULT -> {
@@ -352,6 +407,18 @@ fun ProcessFoundryApp(viewModel: MainViewModel) {
                     )
                 }
             }
+        }
+
+        // 10-Point Cognitive Load Briefing Dialog
+        if (uiState.isCognitiveLoadBriefingVisible && uiState.selectedBottleneck != null) {
+            CognitiveLoadBriefingDialog(
+                bottleneck = uiState.selectedBottleneck!!,
+                onDismiss = { viewModel.setCognitiveLoadBriefingVisible(false) },
+                onNavigateToArchitect = {
+                    viewModel.setCognitiveLoadBriefingVisible(false)
+                    viewModel.selectTab(NavigationTab.ARCHITECT)
+                }
+            )
         }
 
         // PDF Institutional Report Viewer Dialog
@@ -370,6 +437,47 @@ fun ProcessFoundryApp(viewModel: MainViewModel) {
             errorMessage = uiState.aiGenerationError,
             onDismiss = { viewModel.showAiPromptDialog(false) },
             onSubmitPrompt = { prompt -> viewModel.runAiDiagnosis(prompt) }
+        )
+
+        // Frontier AI Studio Media Hub Dialog (Gemini 3.1 Pro Thinking, Flash Image, Veo 3 Video)
+        AiStudioHubDialog(
+            isOpen = uiState.isAiStudioHubOpen,
+            currentBottleneck = uiState.selectedBottleneck,
+            activeTab = uiState.aiStudioActiveTab,
+            onTabSelected = { viewModel.setAiStudioTab(it) },
+            onDismiss = { viewModel.closeAiStudioHub() },
+            highThinkingQuery = uiState.highThinkingQuery,
+            onHighThinkingQueryChange = { viewModel.setHighThinkingQuery(it) },
+            isHighThinkingRunning = uiState.isHighThinkingRunning,
+            highThinkingResult = uiState.highThinkingResult,
+            highThinkingError = uiState.highThinkingError,
+            onRunHighThinking = { viewModel.runHighThinkingAudit(it) },
+            imagePrompt = uiState.imagePrompt,
+            onImagePromptChange = { viewModel.setImagePrompt(it) },
+            selectedImageAspectRatio = uiState.selectedImageAspectRatio,
+            onImageAspectRatioChange = { viewModel.setImageAspectRatio(it) },
+            isImageGenerating = uiState.isImageGenerating,
+            generatedImages = uiState.generatedImages,
+            selectedImageForEdit = uiState.selectedImageForEdit,
+            onSelectImageForEdit = { viewModel.setSelectedImageForEdit(it) },
+            imageGenerationError = uiState.imageGenerationError,
+            onGenerateOrEditImage = { prompt, bitmap, ratio ->
+                viewModel.generateOrEditImage(prompt, bitmap, ratio)
+            },
+            veoPrompt = uiState.veoPrompt,
+            onVeoPromptChange = { viewModel.setVeoPrompt(it) },
+            selectedVeoAspectRatio = uiState.selectedVeoAspectRatio,
+            onVeoAspectRatioChange = { viewModel.setVeoAspectRatio(it) },
+            selectedVeoResolution = uiState.selectedVeoResolution,
+            onVeoResolutionChange = { viewModel.setVeoResolution(it) },
+            isVeoGenerating = uiState.isVeoGenerating,
+            generatedVideos = uiState.generatedVideos,
+            selectedVeoVideo = uiState.selectedVeoVideo,
+            onSelectVeoVideo = { viewModel.setSelectedVeoVideo(it) },
+            veoGenerationError = uiState.veoGenerationError,
+            onGenerateVeoVideo = { prompt, ratio, res ->
+                viewModel.generateVeoVideo(prompt, ratio, res)
+            }
         )
     }
 }

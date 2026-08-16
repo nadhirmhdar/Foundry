@@ -1,12 +1,15 @@
 package com.example.ui.viewmodel
 
 import android.app.Application
+import android.graphics.Bitmap
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppDatabase
 import com.example.data.model.*
+import com.example.data.repository.AiStudioMediaRepository
 import com.example.data.repository.IntelligenceRepository
 import com.example.data.repository.MarketDataRepository
+import com.example.ui.screens.AiStudioTab
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -15,6 +18,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: IntelligenceRepository
     private val marketDataRepository: MarketDataRepository = MarketDataRepository()
+    private val aiStudioMediaRepository: AiStudioMediaRepository = AiStudioMediaRepository()
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -106,6 +110,161 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(isPdfPreviewVisible = visible) }
     }
 
+    fun setCognitiveLoadBriefingVisible(visible: Boolean) {
+        _uiState.update { it.copy(isCognitiveLoadBriefingVisible = visible) }
+    }
+
+    // --- AI Studio Hub Controls ---
+
+    fun openAiStudioHub(tab: AiStudioTab = AiStudioTab.HIGH_THINKING) {
+        val currentBottleneck = _uiState.value.selectedBottleneck
+        val ventureName = currentBottleneck?.suggestedVentureIdea?.name ?: "ProcessFoundry"
+
+        _uiState.update {
+            it.copy(
+                isAiStudioHubOpen = true,
+                aiStudioActiveTab = tab,
+                highThinkingQuery = if (it.highThinkingQuery.isBlank())
+                    "Conduct invariant audit on $ventureName CDC ingestion pipeline during peak quarterly ERP posting"
+                else it.highThinkingQuery,
+                imagePrompt = if (it.imagePrompt.isBlank())
+                    "3D dark cybernetic CAD diagram showing $ventureName zero-latency non-invasive ERP sidecar proxy"
+                else it.imagePrompt,
+                veoPrompt = if (it.veoPrompt.isBlank())
+                    "Cinematic 3D animation of autonomous shopfloor robotic routing and closed-loop ERP reconciliation for $ventureName"
+                else it.veoPrompt
+            )
+        }
+    }
+
+    fun closeAiStudioHub() {
+        _uiState.update { it.copy(isAiStudioHubOpen = false) }
+    }
+
+    fun setAiStudioTab(tab: AiStudioTab) {
+        _uiState.update { it.copy(aiStudioActiveTab = tab) }
+    }
+
+    // 1. High Thinking Mode (gemini-3.1-pro-preview with thinkingLevel = HIGH)
+    fun setHighThinkingQuery(query: String) {
+        _uiState.update { it.copy(highThinkingQuery = query) }
+    }
+
+    fun runHighThinkingAudit(query: String) {
+        if (query.isBlank()) return
+        _uiState.update { it.copy(isHighThinkingRunning = true, highThinkingError = null) }
+
+        viewModelScope.launch {
+            val bottleneck = _uiState.value.selectedBottleneck
+            val result = aiStudioMediaRepository.runHighThinkingAudit(query, bottleneck)
+            result.onSuccess { audit ->
+                _uiState.update {
+                    it.copy(
+                        isHighThinkingRunning = false,
+                        highThinkingResult = audit,
+                        exportSnackbarMessage = "High Thinking Reasoning Audit Completed"
+                    )
+                }
+            }.onFailure { err ->
+                _uiState.update {
+                    it.copy(
+                        isHighThinkingRunning = false,
+                        highThinkingError = err.message ?: "Thinking process encountered an error"
+                    )
+                }
+            }
+        }
+    }
+
+    // 2. Image Studio (gemini-3.1-flash-image-preview - Create & Edit)
+    fun setImagePrompt(prompt: String) {
+        _uiState.update { it.copy(imagePrompt = prompt) }
+    }
+
+    fun setImageAspectRatio(ratio: ImageAspectRatio) {
+        _uiState.update { it.copy(selectedImageAspectRatio = ratio) }
+    }
+
+    fun setSelectedImageForEdit(image: GeneratedAiImage?) {
+        _uiState.update {
+            it.copy(
+                selectedImageForEdit = image,
+                imagePrompt = if (image != null) "Add thermal imaging color map overlay and highlight micro-fractures in neon amber" else it.imagePrompt
+            )
+        }
+    }
+
+    fun generateOrEditImage(prompt: String, baseBitmap: Bitmap?, aspectRatio: ImageAspectRatio) {
+        if (prompt.isBlank()) return
+        _uiState.update { it.copy(isImageGenerating = true, imageGenerationError = null) }
+
+        viewModelScope.launch {
+            val result = aiStudioMediaRepository.generateOrEditImage(prompt, baseBitmap, aspectRatio)
+            result.onSuccess { newImage ->
+                _uiState.update {
+                    it.copy(
+                        isImageGenerating = false,
+                        generatedImages = listOf(newImage) + it.generatedImages,
+                        selectedImageForEdit = null,
+                        exportSnackbarMessage = if (baseBitmap != null) "Image Edited with Gemini 3.1 Flash Image" else "Image Generated with Gemini 3.1 Flash Image"
+                    )
+                }
+            }.onFailure { err ->
+                _uiState.update {
+                    it.copy(
+                        isImageGenerating = false,
+                        imageGenerationError = err.message ?: "Image generation failed"
+                    )
+                }
+            }
+        }
+    }
+
+    // 3. Veo 3 Video Studio (veo-3.1-fast-generate-preview - 16:9 or 9:16)
+    fun setVeoPrompt(prompt: String) {
+        _uiState.update { it.copy(veoPrompt = prompt) }
+    }
+
+    fun setVeoAspectRatio(aspectRatio: VeoVideoAspectRatio) {
+        _uiState.update { it.copy(selectedVeoAspectRatio = aspectRatio) }
+    }
+
+    fun setVeoResolution(resolution: VeoResolution) {
+        _uiState.update { it.copy(selectedVeoResolution = resolution) }
+    }
+
+    fun setSelectedVeoVideo(video: GeneratedVeoVideo?) {
+        _uiState.update { it.copy(selectedVeoVideo = video) }
+    }
+
+    fun generateVeoVideo(prompt: String, aspectRatio: VeoVideoAspectRatio, resolution: VeoResolution) {
+        if (prompt.isBlank()) return
+        _uiState.update { it.copy(isVeoGenerating = true, veoGenerationError = null) }
+
+        viewModelScope.launch {
+            val result = aiStudioMediaRepository.generateVeoVideo(prompt, aspectRatio, resolution)
+            result.onSuccess { video ->
+                _uiState.update {
+                    it.copy(
+                        isVeoGenerating = false,
+                        generatedVideos = listOf(video) + it.generatedVideos,
+                        selectedVeoVideo = video,
+                        exportSnackbarMessage = "Veo 3 Video Generated (${aspectRatio.apiValue})"
+                    )
+                }
+            }.onFailure { err ->
+                _uiState.update {
+                    it.copy(
+                        isVeoGenerating = false,
+                        veoGenerationError = err.message ?: "Video generation failed"
+                    )
+                }
+            }
+        }
+    }
+
+    // --- Standard Navigation & Actions ---
+
     fun selectTab(tab: NavigationTab) {
         _uiState.update { it.copy(selectedTab = tab) }
     }
@@ -136,6 +295,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(selectedDomainFilter = domain) }
     }
 
+    fun setDepartmentFilter(department: String?) {
+        _uiState.update { it.copy(selectedDepartmentFilter = department) }
+    }
+
+    fun setPriorityFilter(priority: SeverityLevel?) {
+        _uiState.update { it.copy(selectedPriorityFilter = priority) }
+    }
+
+    fun resetAllFilters() {
+        _uiState.update {
+            it.copy(
+                searchQuery = "",
+                selectedDomainFilter = null,
+                selectedDepartmentFilter = null,
+                selectedPriorityFilter = null
+            )
+        }
+    }
+
     fun setSearchQuery(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
     }
@@ -145,7 +323,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(isLiveScanning = !current) }
         if (!current) {
             viewModelScope.launch {
-                // Simulate continuous live radar scanning
                 repeat(4) {
                     delay(3500)
                     if (!_uiState.value.isLiveScanning) return@launch

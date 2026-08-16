@@ -34,5 +34,29 @@ class ExampleUnitTest {
         assertTrue(markdown.contains("Market Opportunity & Moat"))
         assertTrue(markdown.contains("Venture Financials & Economics"))
     }
+
+    @Test
+    fun testCognitiveLoadSynthesizer_generates10ConcisePoints() {
+        val sampleBottleneck = CuratedBottlenecksData.getAll().first()
+        val briefing = com.example.data.repository.CognitiveLoadSynthesizer.synthesizeBriefing(sampleBottleneck)
+
+        assertNotNull(briefing)
+        assertEquals(10, briefing.points.size)
+        assertTrue(briefing.estimatedReadTimeSeconds in 20..60)
+        assertTrue(briefing.signalToNoiseRatioPercent > 90.0)
+
+        // Verify each point has a non-blank one-liner lead and key category
+        briefing.points.forEachIndexed { index, point ->
+            assertEquals(index + 1, point.index)
+            assertTrue(point.categoryTag.isNotBlank())
+            assertTrue(point.oneLinerLead.isNotBlank())
+            assertTrue(point.executiveSummary.isNotBlank())
+        }
+
+        val markdown = com.example.data.repository.CognitiveLoadSynthesizer.generate10BulletMarkdown(briefing)
+        assertTrue(markdown.contains("10-Point Executive Cognitive Briefing"))
+        assertTrue(markdown.contains("01."))
+        assertTrue(markdown.contains("10."))
+    }
 }
 

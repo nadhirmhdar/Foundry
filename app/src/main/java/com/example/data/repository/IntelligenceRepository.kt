@@ -171,6 +171,7 @@ class IntelligenceRepository(private val ventureDao: VentureDao) {
         }
 
         val targetIndustry = root.optString("targetIndustry", originalPrompt)
+        val department = root.optString("department", "Operations & Supply Chain")
         val traditionalMethod = root.optString("traditionalMethod", "Standard batch MRP and manual floor adjustments.")
         val traditionalFlaw = root.optString("traditionalFlaw", "Static deterministic planning creates large WIP buffers and bullwhip distortion.")
         val frontierLogic = root.optString("frontierLogic", "Dynamic stochastic constraint programming and continuous graph attention.")
@@ -283,6 +284,7 @@ class IntelligenceRepository(private val ventureDao: VentureDao) {
             title = title,
             domain = domain,
             severity = severity,
+            department = department,
             affectedErpSystems = erpSystems,
             targetIndustry = targetIndustry,
             traditionalMethod = traditionalMethod,
@@ -353,6 +355,7 @@ class IntelligenceRepository(private val ventureDao: VentureDao) {
             title = "Algorithmic Inefficiency in $cleanPrompt",
             domain = BottleneckDomain.ERP_LOGIC,
             severity = SeverityLevel.CRITICAL,
+            department = "Operations & Supply Chain",
             affectedErpSystems = listOf("SAP S/4HANA", "Oracle Cloud ERP", "Microsoft Dynamics 365"),
             targetIndustry = cleanPrompt,
             traditionalMethod = "Static lead-time MRP batch runs executed once nightly.",
@@ -687,6 +690,7 @@ class IntelligenceRepository(private val ventureDao: VentureDao) {
             domain = BottleneckDomain.ERP_LOGIC,
             severity = SeverityLevel.CRITICAL,
             problemScope = ProblemScope.SYSTEMIC_MACRO,
+            department = "Manufacturing & Production",
             affectedErpSystems = listOf("SAP S/4HANA", "Oracle Cloud ERP", "Infor LN"),
             targetIndustry = "Automotive OEM & Precision Heavy Equipment",
             traditionalMethod = "Static lead-time table lookups executed in nightly MRP batch explosions.",
@@ -747,6 +751,7 @@ class IntelligenceRepository(private val ventureDao: VentureDao) {
             domain = BottleneckDomain.HUMAN_QC_LIMIT,
             severity = SeverityLevel.CRITICAL,
             problemScope = ProblemScope.MODULAR_BOTTLENECK,
+            department = "Quality Assurance (QC)",
             affectedErpSystems = listOf("Siemens Opcenter MES", "Rockwell FactoryTalk", "SAP ME"),
             targetIndustry = "Semiconductor, SMT Electronics & Medical Device Assembly",
             traditionalMethod = "Manual operator magnification stations combined with 2D rule-based AOI machines.",
@@ -807,6 +812,7 @@ class IntelligenceRepository(private val ventureDao: VentureDao) {
             domain = BottleneckDomain.BPA_FRICTION,
             severity = SeverityLevel.HIGH,
             problemScope = ProblemScope.MICRO_FRICTION,
+            department = "Finance & Procurement",
             affectedErpSystems = listOf("SAP S/4HANA FI", "Oracle Cloud Financials", "Workday Financial Management"),
             targetIndustry = "Global Supply Chain, Retail Distribution & Industrial Conglomerates",
             traditionalMethod = "Legacy template OCR paired with screen-scraping UI Path / Automation Anywhere bots.",
@@ -867,6 +873,7 @@ class IntelligenceRepository(private val ventureDao: VentureDao) {
             domain = BottleneckDomain.CROSS_INDUSTRY,
             severity = SeverityLevel.CRITICAL,
             problemScope = ProblemScope.SYSTEMIC_MACRO,
+            department = "Supply Chain & Logistics",
             affectedErpSystems = listOf("SAP Ariba", "Oracle SCM Cloud", "Infor Nexus"),
             targetIndustry = "Aerospace, Defense, Automotive & Critical Infrastructure",
             traditionalMethod = "Manual email spreadsheets and periodic supplier portal check-ins.",
@@ -927,6 +934,7 @@ class IntelligenceRepository(private val ventureDao: VentureDao) {
             domain = BottleneckDomain.HUMAN_QC_LIMIT,
             severity = SeverityLevel.HIGH,
             problemScope = ProblemScope.MICRO_FRICTION,
+            department = "Plant Operations & Maintenance",
             affectedErpSystems = listOf("Plex Smart MES", "Epicor Kinetic", "QAD Cloud ERP"),
             targetIndustry = "Precision CNC, Metal Stamping & Polymer Injection Molding",
             traditionalMethod = "Paper shift binders, informal verbal handovers, and trial-and-error manual knob adjustments.",
@@ -987,6 +995,7 @@ class IntelligenceRepository(private val ventureDao: VentureDao) {
             domain = BottleneckDomain.ERP_LOGIC,
             severity = SeverityLevel.HIGH,
             problemScope = ProblemScope.MODULAR_BOTTLENECK,
+            department = "Engineering & R&D",
             affectedErpSystems = listOf("Microsoft Dynamics 365 Supply Chain", "SAP S/4HANA PLM", "Oracle Agile PLM"),
             targetIndustry = "Robotics, EV Mobility & Medical Device Manufacturing",
             traditionalMethod = "Manual spreadsheet export from CAD, manual re-keying into ERP MBOM tables.",
@@ -1047,6 +1056,7 @@ class IntelligenceRepository(private val ventureDao: VentureDao) {
             domain = BottleneckDomain.ERP_LOGIC,
             severity = SeverityLevel.HIGH,
             problemScope = ProblemScope.MICRO_FRICTION,
+            department = "Batch Formulation & Processing",
             affectedErpSystems = listOf("SAP S/4HANA MM", "Oracle Process Manufacturing", "Infor M3"),
             targetIndustry = "Specialty Chemicals, Pharma Compounding & Food Processing",
             traditionalMethod = "Fixed 3-decimal rounding lookup tables in standard ERP material masters.",
@@ -1107,6 +1117,7 @@ class IntelligenceRepository(private val ventureDao: VentureDao) {
             domain = BottleneckDomain.BPA_FRICTION,
             severity = SeverityLevel.HIGH,
             problemScope = ProblemScope.MICRO_FRICTION,
+            department = "Warehousing & Inbound Logistics",
             affectedErpSystems = listOf("SAP Extended Warehouse Management (EWM)", "Manhattan Associates WMS", "Blue Yonder WMS"),
             targetIndustry = "Retail Distribution, Logistics Warehouses & CPG Manufacturing",
             traditionalMethod = "Paper packing slip clipboard audits and manual keyboard entry into green-screen WMS terminals.",

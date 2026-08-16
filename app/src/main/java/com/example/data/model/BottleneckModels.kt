@@ -33,6 +33,7 @@ data class ErpBottleneck(
     val domain: BottleneckDomain,
     val severity: SeverityLevel,
     val problemScope: ProblemScope = ProblemScope.MODULAR_BOTTLENECK,
+    val department: String = "Manufacturing & Production", // Department / Functional Area
     val affectedErpSystems: List<String>, // e.g. ["SAP S/4HANA", "Oracle Cloud ERP", "Microsoft Dynamics 365"]
     val targetIndustry: String, // e.g. "Semiconductor & High-Precision Fab", "Automotive Tier 1", "Pharma Batching"
     val traditionalMethod: String, // How it is done today

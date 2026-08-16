@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.example.data.model.ComparativeEfficiencyRatios
 import com.example.data.model.ErpBottleneck
 import com.example.data.model.RealtimeMarketDataFeed
+import com.example.ui.components.CognitiveLoadDashboardCard
 import com.example.ui.components.MetricCard
 import com.example.ui.components.RealtimeMarketBenchmarkCard
 import com.example.ui.components.SensitivityMatrixTable
@@ -42,6 +43,8 @@ fun ValuationReportScreen(
     isMarketFeedRefreshing: Boolean = false,
     onRefreshMarketBenchmarks: () -> Unit = {},
     onOpenPdfPreview: () -> Unit = {},
+    onOpenCognitiveBriefing: () -> Unit = {},
+    onNavigateToArchitect: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     if (bottleneck == null) {
@@ -113,6 +116,25 @@ fun ValuationReportScreen(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // 10-Point Cognitive Load Briefing Button
+                            Surface(
+                                shape = CircleShape,
+                                color = SophisticatedSurfaceVariant,
+                                border = BorderStroke(1.dp, SophisticatedLavender.copy(alpha = 0.5f))
+                            ) {
+                                IconButton(
+                                    onClick = onOpenCognitiveBriefing,
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Psychology,
+                                        contentDescription = "Cognitive Load Briefing",
+                                        tint = SophisticatedLavender,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+
                             // PDF Memo Preview Button
                             Surface(
                                 shape = CircleShape,
@@ -184,6 +206,15 @@ fun ValuationReportScreen(
                     onRefresh = onRefreshMarketBenchmarks
                 )
             }
+        }
+
+        // Cognitive Load 10-Point Executive Briefing Card
+        item {
+            CognitiveLoadDashboardCard(
+                bottleneck = bottleneck,
+                onOpenFullBriefing = onOpenCognitiveBriefing,
+                onNavigateToArchitect = onNavigateToArchitect
+            )
         }
 
         // Valuation Key Highlights Grid

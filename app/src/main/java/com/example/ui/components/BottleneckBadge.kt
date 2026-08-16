@@ -86,3 +86,36 @@ fun SeverityBadge(
         )
     }
 }
+
+@Composable
+fun DepartmentBadge(
+    department: String,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(100.dp),
+        color = SophisticatedSurfaceVariant,
+        border = BorderStroke(1.dp, SophisticatedBorder)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(5.dp)
+                    .background(SophisticatedLavender, CircleShape)
+            )
+            Text(
+                text = department,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 10.sp,
+                    color = SophisticatedTextSecondary
+                )
+            )
+        }
+    }
+}

@@ -1,7 +1,9 @@
 package com.example.ui.viewmodel
 
+import android.graphics.Bitmap
 import com.example.data.local.VentureEntity
 import com.example.data.model.*
+import com.example.ui.screens.AiStudioTab
 
 enum class NavigationTab(val label: String, val iconName: String) {
     SCANNER("Radar Scanner", "radar"),
@@ -30,6 +32,8 @@ data class MainUiState(
     val bottlenecks: List<ErpBottleneck> = emptyList(),
     val selectedBottleneck: ErpBottleneck? = null,
     val selectedDomainFilter: BottleneckDomain? = null,
+    val selectedDepartmentFilter: String? = null,
+    val selectedPriorityFilter: SeverityLevel? = null,
     val searchQuery: String = "",
     val isAiGenerating: Boolean = false,
     val aiGenerationError: String? = null,
@@ -44,5 +48,33 @@ data class MainUiState(
     val marketFeed: RealtimeMarketDataFeed? = null,
     val comparativeRatios: ComparativeEfficiencyRatios? = null,
     val isMarketFeedRefreshing: Boolean = false,
-    val isPdfPreviewVisible: Boolean = false
+    val isPdfPreviewVisible: Boolean = false,
+    val isCognitiveLoadBriefingVisible: Boolean = false,
+
+    // --- AI Studio Hub State ---
+    val isAiStudioHubOpen: Boolean = false,
+    val aiStudioActiveTab: AiStudioTab = AiStudioTab.HIGH_THINKING,
+
+    // High Thinking State (gemini-3.1-pro-preview, thinkingLevel = HIGH)
+    val highThinkingQuery: String = "",
+    val isHighThinkingRunning: Boolean = false,
+    val highThinkingResult: HighThinkingAuditResult? = null,
+    val highThinkingError: String? = null,
+
+    // Image Studio State (gemini-3.1-flash-image-preview)
+    val imagePrompt: String = "",
+    val selectedImageAspectRatio: ImageAspectRatio = ImageAspectRatio.SQUARE,
+    val isImageGenerating: Boolean = false,
+    val generatedImages: List<GeneratedAiImage> = emptyList(),
+    val selectedImageForEdit: GeneratedAiImage? = null,
+    val imageGenerationError: String? = null,
+
+    // Veo 3 Video State (veo-3.1-fast-generate-preview, 16:9 / 9:16)
+    val veoPrompt: String = "",
+    val selectedVeoAspectRatio: VeoVideoAspectRatio = VeoVideoAspectRatio.LANDSCAPE_16_9,
+    val selectedVeoResolution: VeoResolution = VeoResolution.RES_1080P,
+    val isVeoGenerating: Boolean = false,
+    val generatedVideos: List<GeneratedVeoVideo> = emptyList(),
+    val selectedVeoVideo: GeneratedVeoVideo? = null,
+    val veoGenerationError: String? = null
 )

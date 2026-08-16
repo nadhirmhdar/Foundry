@@ -45,6 +45,7 @@ fun PitchDeckStudioScreen(
     onTogglePresenterMode: (Boolean) -> Unit,
     onExportMarkdown: () -> Unit,
     onOpenPdfPreview: () -> Unit = {},
+    onOpenAiStudio: (AiStudioTab) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     if (bottleneck == null) {
@@ -115,6 +116,25 @@ fun PitchDeckStudioScreen(
                         }
 
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            // AI Studio Button
+                            Surface(
+                                shape = CircleShape,
+                                color = SophisticatedSurfaceVariant,
+                                border = BorderStroke(1.dp, SophisticatedLavender.copy(alpha = 0.5f))
+                            ) {
+                                IconButton(
+                                    onClick = { onOpenAiStudio(com.example.ui.screens.AiStudioTab.IMAGE_STUDIO) },
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AutoAwesome,
+                                        contentDescription = "AI Studio Media Hub",
+                                        tint = SophisticatedLavender,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+
                             // PDF Deal Memo Preview Button
                             Surface(
                                 shape = CircleShape,

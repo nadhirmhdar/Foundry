@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -14,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -37,6 +39,8 @@ fun VentureArchitectScreen(
     onCopyMarkdown: () -> Unit,
     onOpenAiDiagnosis: () -> Unit,
     onOpenPdfPreview: () -> Unit = {},
+    onOpenCognitiveBriefing: () -> Unit = {},
+    onOpenAiStudio: (AiStudioTab) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     if (bottleneck == null) {
@@ -123,6 +127,44 @@ fun VentureArchitectScreen(
                         }
 
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            // AI Studio Hub (Thinking, Images, Veo Video)
+                            Surface(
+                                shape = CircleShape,
+                                color = SophisticatedSurfaceVariant,
+                                border = BorderStroke(1.dp, SophisticatedLavender.copy(alpha = 0.5f))
+                            ) {
+                                IconButton(
+                                    onClick = { onOpenAiStudio(com.example.ui.screens.AiStudioTab.HIGH_THINKING) },
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AutoAwesome,
+                                        contentDescription = "AI Studio Hub",
+                                        tint = SophisticatedLavender,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+
+                            // 10-Point Cognitive Load Briefing Button
+                            Surface(
+                                shape = CircleShape,
+                                color = SophisticatedSurfaceVariant,
+                                border = BorderStroke(1.dp, SophisticatedLavender.copy(alpha = 0.5f))
+                            ) {
+                                IconButton(
+                                    onClick = onOpenCognitiveBriefing,
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Psychology,
+                                        contentDescription = "10-Point Cognitive Load Briefing",
+                                        tint = SophisticatedLavender,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+
                             // PDF Deal Memo Preview Button
                             Surface(
                                 shape = CircleShape,
@@ -252,6 +294,196 @@ fun VentureArchitectScreen(
                     highlightColor = SophisticatedSecondary,
                     modifier = Modifier.weight(1f)
                 )
+            }
+        }
+
+        // Frontier AI Studio Suite Card (High Thinking, Images, Veo 3 Video)
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = SophisticatedSurface
+                ),
+                border = BorderStroke(1.dp, SophisticatedLavender.copy(alpha = 0.4f))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = "AI Suite",
+                                tint = SophisticatedLavender,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = "Frontier AI Synthesis Suite",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = SophisticatedTextPrimary,
+                                    fontSize = 15.sp
+                                )
+                            )
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(100.dp),
+                            color = SophisticatedSurfaceVariant
+                        ) {
+                            Text(
+                                text = "GEMINI + VEO 3",
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = SophisticatedLavender
+                                )
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = "Leverage Google's frontier models for deep architectural invariant reasoning, visual asset rendering, and 3D simulation video generation.",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = SophisticatedTextSecondary,
+                            fontSize = 11.sp,
+                            lineHeight = 16.sp
+                        )
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // High Thinking Button
+                        Surface(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { onOpenAiStudio(com.example.ui.screens.AiStudioTab.HIGH_THINKING) },
+                            color = SophisticatedDarkBg,
+                            border = BorderStroke(1.dp, SophisticatedBorderSubtle),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Psychology,
+                                    contentDescription = "Thinking",
+                                    tint = SophisticatedLavender,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = "High Thinking",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = SophisticatedTextPrimary,
+                                        fontSize = 10.sp
+                                    )
+                                )
+                                Text(
+                                    text = "Gemini 3.1 Pro",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = SophisticatedTextMuted,
+                                        fontSize = 9.sp
+                                    )
+                                )
+                            }
+                        }
+
+                        // Image Studio Button
+                        Surface(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { onOpenAiStudio(com.example.ui.screens.AiStudioTab.IMAGE_STUDIO) },
+                            color = SophisticatedDarkBg,
+                            border = BorderStroke(1.dp, SophisticatedBorderSubtle),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Image,
+                                    contentDescription = "Images",
+                                    tint = SophisticatedSecondary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = "Visual Studio",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = SophisticatedTextPrimary,
+                                        fontSize = 10.sp
+                                    )
+                                )
+                                Text(
+                                    text = "Flash Image",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = SophisticatedTextMuted,
+                                        fontSize = 9.sp
+                                    )
+                                )
+                            }
+                        }
+
+                        // Veo Video Button
+                        Surface(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { onOpenAiStudio(com.example.ui.screens.AiStudioTab.VEO_VIDEO) },
+                            color = SophisticatedDarkBg,
+                            border = BorderStroke(1.dp, SophisticatedBorderSubtle),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(10.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Videocam,
+                                    contentDescription = "Veo 3",
+                                    tint = SophisticatedLavenderLight,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = "Veo 3 Video",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = SophisticatedTextPrimary,
+                                        fontSize = 10.sp
+                                    )
+                                )
+                                Text(
+                                    text = "16:9 / 9:16",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = SophisticatedTextMuted,
+                                        fontSize = 9.sp
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
 
