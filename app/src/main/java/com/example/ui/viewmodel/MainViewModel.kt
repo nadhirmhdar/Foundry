@@ -24,6 +24,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val aiStudioMediaRepository: AiStudioMediaRepository = AiStudioMediaRepository()
     private val searchGroundingRepository: com.example.data.repository.SearchGroundingRepository = com.example.data.repository.SearchGroundingRepository()
     private val authManager: com.example.data.auth.FirebaseAuthManager = com.example.data.auth.FirebaseAuthManager(viewModelScope)
+    val bottleneckRepository: com.example.data.repository.BottleneckRepository = com.example.data.repository.FirestoreBottleneckRepository()
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -624,6 +625,51 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         isSearchGroundingLoading = false,
                         searchGroundingError = err.message ?: "Search grounding query failed"
                     )
+                }
+            }
+        }
+    }
+
+    // --- Firestore Bottleneck CRUD Operations ---
+
+    fun saveBottleneckToCloud(bottleneck: ErpBottleneck) {
+        viewModelScope.launch {
+            bottleneckRepository.createBottleneck(bottleneck).onSuccess { id ->
+                _uiState.update {
+                    it.copy(exportSnackbarMessage = "Saved bottleneck to Firestore ($id)")
+                }
+            }.onFailure { err ->
+                _uiState.update {
+                    it.copy(exportSnackbarMessage = "Saved locally: Firestore ${err.message}")
+                }
+            }
+        }
+    }
+
+    fun deleteBottleneckFromCloud(id: String) {
+        viewModelScope.launch {
+            bottleneckRepository.deleteBottleneck(id).onSuccess {
+                _uiState.update {
+                    it.copy(exportSnackbarMessage = "Deleted bottleneck from Firestore")
+                }
+            }.onFailure { err ->
+                _uiState.update {
+                    it.copy(exportSnackbarMessage = "Firestore delete error: ${err.message}")
+                }
+            }
+        }
+    }
+
+    fun syncCuratedBottlenecksToCloud() {
+        viewModelScope.launch {
+            val curated = repository.curatedBottlenecks
+            bottleneckRepository.batchInsertBottlenecks(curated).onSuccess { count ->
+                _uiState.update {
+                    it.copy(exportSnackbarMessage = "Unified $count curated bottlenecks to Cloud Firestore")
+                }
+            }.onFailure { err ->
+                _uiState.update {
+                    it.copy(exportSnackbarMessage = "Cloud seed status: ${err.message}")
                 }
             }
         }
