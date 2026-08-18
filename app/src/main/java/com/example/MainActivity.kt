@@ -403,7 +403,9 @@ fun ProcessFoundryApp(viewModel: MainViewModel) {
                             viewModel.selectTab(NavigationTab.ARCHITECT)
                         },
                         onDeleteVenture = { viewModel.deleteSavedVentureById(it) },
-                        onNavigateToScanner = { viewModel.selectTab(NavigationTab.SCANNER) }
+                        onNavigateToScanner = { viewModel.selectTab(NavigationTab.SCANNER) },
+                        syncInfo = uiState.syncInfo,
+                        onSyncWithCloud = { viewModel.syncWithFirestore() }
                     )
                 }
             }

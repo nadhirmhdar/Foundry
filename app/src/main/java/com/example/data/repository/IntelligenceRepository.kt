@@ -5,6 +5,7 @@ import com.example.data.local.VentureDao
 import com.example.data.local.VentureEntity
 import com.example.data.model.*
 import com.example.data.remote.GeminiClient
+import com.example.data.sync.FirestoreSyncService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -12,7 +13,10 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 
-class IntelligenceRepository(private val ventureDao: VentureDao) {
+class IntelligenceRepository(
+    private val ventureDao: VentureDao,
+    private val firestoreSyncService: FirestoreSyncService? = null
+) {
 
     val savedVentures: Flow<List<VentureEntity>> = ventureDao.getAllSavedVentures()
     val savedCount: Flow<Int> = ventureDao.getSavedCount()
@@ -43,10 +47,14 @@ class IntelligenceRepository(private val ventureDao: VentureDao) {
             isCustomAiGenerated = isAiGenerated
         )
         ventureDao.insertVenture(entity)
+        // Push to cloud Firestore for cross-device synchronization
+        firestoreSyncService?.pushVenture(entity)
     }
 
     suspend fun deleteSavedVenture(ventureId: String) = withContext(Dispatchers.IO) {
         ventureDao.deleteVentureById(ventureId)
+        // Delete from cloud Firestore
+        firestoreSyncService?.deleteVenture(ventureId)
     }
 
     suspend fun isVentureSaved(ventureId: String): Boolean = withContext(Dispatchers.IO) {
@@ -629,24 +637,7 @@ class IntelligenceRepository(private val ventureDao: VentureDao) {
     }
 
     private fun generateCuratedBottlenecks(): List<ErpBottleneck> {
-        return listOf(
-            // 1. Static Lead Time Scheduling (Macro Modular)
-            createBottleneck1(),
-            // 2. High-Speed QC Visual Fatigue (Macro Modular)
-            createBottleneck2(),
-            // 3. Brittle Invoicing & Multi-Way PO Reconciliation (Micro-Friction)
-            createBottleneck3(),
-            // 4. Multi-Tier Supply Chain & Consignment Phantom Inventory (Macro Enterprise)
-            createBottleneck4(),
-            // 5. Tribal Knowledge & Shift Handover Degradation (Micro-Friction)
-            createBottleneck5(),
-            // 6. Rigid Static BOM Explosion vs Parametric Graph CAD (Modular Bottleneck)
-            createBottleneck6(),
-            // 7. Micro-Problem: Unit-of-Measure (UOM) Precision Cascades in Batching (Micro-Friction)
-            createBottleneck7(),
-            // 8. Micro-Problem: ASN Line Item Shipping Discrepancy Matching (Micro-Friction)
-            createBottleneck8()
-        )
+        return CuratedBottlenecksData.getAll()
     }
 
     private fun createBottleneck1(): ErpBottleneck {

@@ -1,12 +1,14 @@
 package com.example
 
 import com.example.data.model.PitchPerspective
+import com.example.data.repository.CognitiveLoadSynthesizer
 import com.example.data.repository.CuratedBottlenecksData
 import com.example.data.repository.PitchDeckArchitectSynthesizer
 import org.junit.Assert.*
 import org.junit.Test
 
 class ExampleUnitTest {
+
     @Test
     fun testPitchDeckArchitectSynthesis_allFourPillarsGenerated() {
         val sampleBottleneck = CuratedBottlenecksData.getAll().first()
@@ -38,7 +40,7 @@ class ExampleUnitTest {
     @Test
     fun testCognitiveLoadSynthesizer_generates10ConcisePoints() {
         val sampleBottleneck = CuratedBottlenecksData.getAll().first()
-        val briefing = com.example.data.repository.CognitiveLoadSynthesizer.synthesizeBriefing(sampleBottleneck)
+        val briefing = CognitiveLoadSynthesizer.synthesizeBriefing(sampleBottleneck)
 
         assertNotNull(briefing)
         assertEquals(10, briefing.points.size)
@@ -53,7 +55,7 @@ class ExampleUnitTest {
             assertTrue(point.executiveSummary.isNotBlank())
         }
 
-        val markdown = com.example.data.repository.CognitiveLoadSynthesizer.generate10BulletMarkdown(briefing)
+        val markdown = CognitiveLoadSynthesizer.generate10BulletMarkdown(briefing)
         assertTrue(markdown.contains("10-Point Executive Cognitive Briefing"))
         assertTrue(markdown.contains("01."))
         assertTrue(markdown.contains("10."))

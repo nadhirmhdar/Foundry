@@ -12,11 +12,17 @@ interface VentureDao {
     @Query("SELECT * FROM saved_ventures ORDER BY createdAt DESC")
     fun getAllSavedVentures(): Flow<List<VentureEntity>>
 
+    @Query("SELECT * FROM saved_ventures ORDER BY createdAt DESC")
+    suspend fun getAllSavedVenturesList(): List<VentureEntity>
+
     @Query("SELECT * FROM saved_ventures WHERE id = :id LIMIT 1")
     suspend fun getVentureById(id: String): VentureEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertVenture(venture: VentureEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertVentures(ventures: List<VentureEntity>)
 
     @Query("DELETE FROM saved_ventures WHERE id = :id")
     suspend fun deleteVentureById(id: String)

@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.sp
 import com.example.data.local.VentureEntity
 import com.example.data.model.BottleneckDomain
 import com.example.data.model.ErpBottleneck
+import com.example.data.sync.SyncInfo
+import com.example.data.sync.SyncStatus
 import com.example.ui.components.DomainBadge
 import com.example.ui.theme.*
 import java.text.SimpleDateFormat
@@ -33,9 +35,12 @@ fun VaultScreen(
     onSelectVenture: (ErpBottleneck) -> Unit,
     onDeleteVenture: (String) -> Unit,
     onNavigateToScanner: () -> Unit,
+    syncInfo: SyncInfo = SyncInfo(),
+    onSyncWithCloud: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val dateFormat = SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
+    val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
 
     LazyColumn(
         modifier = modifier
@@ -44,7 +49,7 @@ fun VaultScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(top = 12.dp, bottom = 90.dp)
     ) {
-        // Vault Header
+        // Vault Header with Cloud Sync Bar
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -58,7 +63,7 @@ fun VaultScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -93,13 +98,97 @@ fun VaultScreen(
                     }
 
                     Text(
-                        text = "Your persistent portfolio of bookmarked process bottlenecks, startup pitch decks, and valuation models.",
+                        text = "Your persistent portfolio of bookmarked process bottlenecks, startup pitch decks, and valuation models backed by Room & Cloud Firestore.",
                         style = MaterialTheme.typography.bodySmall.copy(
                             color = SophisticatedTextSecondary,
                             lineHeight = 18.sp,
                             fontSize = 12.sp
                         )
                     )
+
+                    // Cloud Firestore Sync Bar
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = SophisticatedDarkBg,
+                        border = BorderStroke(1.dp, SophisticatedBorder)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                val (statusColor, statusIcon) = when (syncInfo.status) {
+                                    SyncStatus.SYNCING -> Pair(SophisticatedLavender, Icons.Default.Sync)
+                                    SyncStatus.SYNCED -> Pair(SophisticatedEmerald, Icons.Default.CloudDone)
+                                    SyncStatus.OFFLINE -> Pair(SophisticatedSoftAmber, Icons.Default.CloudOff)
+                                    SyncStatus.ERROR -> Pair(SophisticatedCritical, Icons.Default.CloudQueue)
+                                    SyncStatus.IDLE -> Pair(SophisticatedLavender, Icons.Default.CloudSync)
+                                }
+
+                                Icon(
+                                    imageVector = statusIcon,
+                                    contentDescription = "Sync Status",
+                                    tint = statusColor,
+                                    modifier = Modifier.size(16.dp)
+                                )
+
+                                Column {
+                                    Text(
+                                        text = when (syncInfo.status) {
+                                            SyncStatus.SYNCING -> "Syncing with Cloud Firestore..."
+                                            SyncStatus.SYNCED -> "Cloud Synced (${syncInfo.syncedCount} models)"
+                                            SyncStatus.OFFLINE -> "Local Offline (Room DB Active)"
+                                            SyncStatus.ERROR -> "Sync Offline"
+                                            SyncStatus.IDLE -> "Room-to-Firestore Ready"
+                                        },
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 11.sp,
+                                            color = SophisticatedTextPrimary
+                                        )
+                                    )
+                                    if (syncInfo.lastSyncTimestamp != null) {
+                                        Text(
+                                            text = "Last synced at ${timeFormat.format(Date(syncInfo.lastSyncTimestamp))}",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontSize = 9.sp,
+                                                color = SophisticatedTextMuted
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+
+                            TextButton(
+                                onClick = onSyncWithCloud,
+                                enabled = syncInfo.status != SyncStatus.SYNCING,
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = "Sync",
+                                    tint = SophisticatedLavender,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = if (syncInfo.status == SyncStatus.SYNCING) "Syncing..." else "Sync Now",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp,
+                                        color = SophisticatedLavender
+                                    )
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

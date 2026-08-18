@@ -9,6 +9,8 @@ import com.example.data.model.*
 import com.example.data.repository.AiStudioMediaRepository
 import com.example.data.repository.IntelligenceRepository
 import com.example.data.repository.MarketDataRepository
+import com.example.data.sync.FirestoreSyncService
+import com.example.data.sync.SyncStatus
 import com.example.ui.screens.AiStudioTab
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -16,6 +18,7 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val firestoreSyncService: FirestoreSyncService
     private val repository: IntelligenceRepository
     private val marketDataRepository: MarketDataRepository = MarketDataRepository()
     private val aiStudioMediaRepository: AiStudioMediaRepository = AiStudioMediaRepository()
@@ -25,7 +28,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         val database = AppDatabase.getDatabase(application)
-        repository = IntelligenceRepository(database.ventureDao())
+        firestoreSyncService = FirestoreSyncService(database.ventureDao(), viewModelScope)
+        repository = IntelligenceRepository(database.ventureDao(), firestoreSyncService)
 
         val initialBottlenecks = repository.curatedBottlenecks
         val initialSelected = initialBottlenecks.firstOrNull()
@@ -55,10 +59,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         observeSavedVentures()
         observeMarketData()
+        observeSyncStatus()
 
         // Fetch live market data in background on launch
         viewModelScope.launch {
             marketDataRepository.refreshMarketData()
+        }
+
+        // Initialize Cloud Firestore synchronization and real-time observer
+        firestoreSyncService.startRealtimeListener()
+        viewModelScope.launch {
+            firestoreSyncService.syncAll()
+        }
+    }
+
+    private fun observeSyncStatus() {
+        viewModelScope.launch {
+            firestoreSyncService.syncInfo.collect { syncInfo ->
+                _uiState.update { it.copy(syncInfo = syncInfo) }
+            }
         }
     }
 
@@ -518,5 +537,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             sb.appendLine()
         }
         return sb.toString()
+    }
+
+    fun syncWithFirestore() {
+        viewModelScope.launch {
+            firestoreSyncService.syncAll().onSuccess { count ->
+                _uiState.update {
+                    it.copy(exportSnackbarMessage = "Cloud Sync Complete: $count models synchronized")
+                }
+            }.onFailure { err ->
+                _uiState.update {
+                    it.copy(exportSnackbarMessage = "Sync offline: Using local Room database")
+                }
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        firestoreSyncService.stopRealtimeListener()
     }
 }

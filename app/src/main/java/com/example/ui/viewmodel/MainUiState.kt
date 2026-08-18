@@ -3,6 +3,7 @@ package com.example.ui.viewmodel
 import android.graphics.Bitmap
 import com.example.data.local.VentureEntity
 import com.example.data.model.*
+import com.example.data.sync.SyncInfo
 import com.example.ui.screens.AiStudioTab
 
 enum class NavigationTab(val label: String, val iconName: String) {
@@ -50,6 +51,7 @@ data class MainUiState(
     val isMarketFeedRefreshing: Boolean = false,
     val isPdfPreviewVisible: Boolean = false,
     val isCognitiveLoadBriefingVisible: Boolean = false,
+    val syncInfo: SyncInfo = SyncInfo(),
 
     // --- AI Studio Hub State ---
     val isAiStudioHubOpen: Boolean = false,
