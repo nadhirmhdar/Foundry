@@ -7,7 +7,13 @@ import com.squareup.moshi.JsonClass
 data class GeminiRequest(
     val contents: List<GeminiContent>,
     val generationConfig: GeminiGenerationConfig? = null,
-    val systemInstruction: GeminiContent? = null
+    val systemInstruction: GeminiContent? = null,
+    val tools: List<GeminiTool>? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class GeminiTool(
+    val googleSearch: Map<String, String>? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -58,7 +64,31 @@ data class GeminiResponse(
 @JsonClass(generateAdapter = true)
 data class GeminiCandidate(
     val content: GeminiContent? = null,
-    val finishReason: String? = null
+    val finishReason: String? = null,
+    val groundingMetadata: GeminiGroundingMetadata? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class GeminiGroundingMetadata(
+    val webSearchQueries: List<String>? = null,
+    val searchEntryPoint: GeminiSearchEntryPoint? = null,
+    val groundingChunks: List<GeminiGroundingChunk>? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class GeminiSearchEntryPoint(
+    val renderedContent: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class GeminiGroundingChunk(
+    val web: GeminiWebSource? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class GeminiWebSource(
+    val uri: String? = null,
+    val title: String? = null
 )
 
 @JsonClass(generateAdapter = true)

@@ -26,7 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.components.CognitiveLoadBriefingDialog
+import com.example.ui.components.GoogleAuthDialog
 import com.example.ui.components.PdfReportViewerDialog
+import com.example.ui.components.SearchGroundingDialog
 import com.example.ui.screens.*
 import com.example.ui.theme.*
 import com.example.ui.viewmodel.MainViewModel
@@ -54,6 +56,7 @@ fun ProcessFoundryApp(viewModel: MainViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    var showAuthDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.exportSnackbarMessage) {
         uiState.exportSnackbarMessage?.let { msg ->
@@ -158,6 +161,58 @@ fun ProcessFoundryApp(viewModel: MainViewModel) {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
+                        // Google Search Grounding with Gemini 3.5 Flash Trigger
+                        Surface(
+                            shape = CircleShape,
+                            color = SophisticatedSurface,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, SophisticatedLavender.copy(alpha = 0.6f))
+                        ) {
+                            IconButton(
+                                onClick = { viewModel.openSearchGrounding() },
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .testTag("top_search_grounding_button")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.TravelExplore,
+                                    contentDescription = "Search Grounding (Gemini 3.5 Flash)",
+                                    tint = SophisticatedLavender,
+                                    modifier = Modifier.size(19.dp)
+                                )
+                            }
+                        }
+
+                        // Firebase Auth & Cloud Account Trigger
+                        Surface(
+                            shape = CircleShape,
+                            color = if (uiState.authUiState.isAuthenticated) SophisticatedLavender.copy(alpha = 0.2f) else SophisticatedSurface,
+                            border = androidx.compose.foundation.BorderStroke(1.dp, if (uiState.authUiState.isAuthenticated) SophisticatedLavender else SophisticatedBorderSubtle)
+                        ) {
+                            IconButton(
+                                onClick = { showAuthDialog = true },
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .testTag("top_auth_profile_button")
+                            ) {
+                                if (uiState.authUiState.isAuthenticated) {
+                                    Text(
+                                        text = (uiState.authUiState.userProfile?.displayName ?: "U").take(1).uppercase(),
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = SophisticatedLavender,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.AccountCircle,
+                                        contentDescription = "Sign in to Firebase",
+                                        tint = SophisticatedLavender,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+
                         // AI Studio Hub Trigger (Gemini 3.1 Pro Thinking, Flash Image, Veo 3 Video)
                         Surface(
                             shape = CircleShape,
@@ -439,6 +494,29 @@ fun ProcessFoundryApp(viewModel: MainViewModel) {
             errorMessage = uiState.aiGenerationError,
             onDismiss = { viewModel.showAiPromptDialog(false) },
             onSubmitPrompt = { prompt -> viewModel.runAiDiagnosis(prompt) }
+        )
+
+        // Google Search Grounding with Gemini 3.5 Flash Dialog
+        SearchGroundingDialog(
+            isOpen = uiState.isSearchGroundingDialogOpen,
+            query = uiState.searchGroundingQuery,
+            isLoading = uiState.isSearchGroundingLoading,
+            result = uiState.groundedSearchResult,
+            errorMessage = uiState.searchGroundingError,
+            onQueryChange = { viewModel.setSearchGroundingQuery(it) },
+            onSearch = { viewModel.runSearchGrounding(it) },
+            onDismiss = { viewModel.closeSearchGrounding() }
+        )
+
+        // Firebase Auth & Google Sign-In Dialog
+        GoogleAuthDialog(
+            isOpen = showAuthDialog,
+            authUiState = uiState.authUiState,
+            syncInfo = uiState.syncInfo,
+            onSignInWithGoogle = { viewModel.signInWithGoogle(context) },
+            onSignOut = { viewModel.signOut() },
+            onSyncNow = { viewModel.syncWithFirestore() },
+            onDismiss = { showAuthDialog = false }
         )
 
         // Frontier AI Studio Media Hub Dialog (Gemini 3.1 Pro Thinking, Flash Image, Veo 3 Video)

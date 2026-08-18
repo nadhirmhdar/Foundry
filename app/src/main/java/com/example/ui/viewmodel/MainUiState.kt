@@ -53,6 +53,16 @@ data class MainUiState(
     val isCognitiveLoadBriefingVisible: Boolean = false,
     val syncInfo: SyncInfo = SyncInfo(),
 
+    // --- Firebase Auth & Google Sign-In State ---
+    val authUiState: com.example.data.auth.AuthUiState = com.example.data.auth.AuthUiState(),
+
+    // --- Google Search Grounding with Gemini 3.5 Flash ---
+    val isSearchGroundingDialogOpen: Boolean = false,
+    val searchGroundingQuery: String = "",
+    val isSearchGroundingLoading: Boolean = false,
+    val groundedSearchResult: GroundedMarketIntelligenceResult? = null,
+    val searchGroundingError: String? = null,
+
     // --- AI Studio Hub State ---
     val isAiStudioHubOpen: Boolean = false,
     val aiStudioActiveTab: AiStudioTab = AiStudioTab.HIGH_THINKING,

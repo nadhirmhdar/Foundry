@@ -22,6 +22,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: IntelligenceRepository
     private val marketDataRepository: MarketDataRepository = MarketDataRepository()
     private val aiStudioMediaRepository: AiStudioMediaRepository = AiStudioMediaRepository()
+    private val searchGroundingRepository: com.example.data.repository.SearchGroundingRepository = com.example.data.repository.SearchGroundingRepository()
+    private val authManager: com.example.data.auth.FirebaseAuthManager = com.example.data.auth.FirebaseAuthManager(viewModelScope)
 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -60,6 +62,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         observeSavedVentures()
         observeMarketData()
         observeSyncStatus()
+        observeAuthState()
 
         // Fetch live market data in background on launch
         viewModelScope.launch {
@@ -70,6 +73,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         firestoreSyncService.startRealtimeListener()
         viewModelScope.launch {
             firestoreSyncService.syncAll()
+        }
+    }
+
+    private fun observeAuthState() {
+        viewModelScope.launch {
+            authManager.authState.collect { authState ->
+                _uiState.update { it.copy(authUiState = authState) }
+            }
         }
     }
 
@@ -537,6 +548,85 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             sb.appendLine()
         }
         return sb.toString()
+    }
+
+    // --- Firebase Auth & Google Sign-In Actions ---
+
+    fun signInWithGoogle(context: android.content.Context) {
+        viewModelScope.launch {
+            val result = authManager.signInWithGoogle(context)
+            result.onSuccess { profile ->
+                _uiState.update {
+                    it.copy(exportSnackbarMessage = "Authenticated as ${profile.displayName ?: profile.email}")
+                }
+                // Automatically sync cloud vault upon sign-in
+                firestoreSyncService.syncAll()
+            }.onFailure { err ->
+                _uiState.update {
+                    it.copy(exportSnackbarMessage = "Sign in: ${err.message}")
+                }
+            }
+        }
+    }
+
+    fun signOut() {
+        authManager.signOut()
+        _uiState.update {
+            it.copy(exportSnackbarMessage = "Signed out of Google & Firebase")
+        }
+    }
+
+    // --- Google Search Grounding with Gemini 3.5 Flash ---
+
+    fun openSearchGrounding(initialQuery: String? = null) {
+        val defaultQuery = initialQuery ?: _uiState.value.selectedBottleneck?.let {
+            "${it.suggestedVentureIdea.name} ${it.targetIndustry} valuation multiples"
+        } ?: "Enterprise ERP sidecar modernization valuation multiples"
+
+        _uiState.update {
+            it.copy(
+                isSearchGroundingDialogOpen = true,
+                searchGroundingQuery = defaultQuery,
+                searchGroundingError = null
+            )
+        }
+        if (_uiState.value.groundedSearchResult == null || initialQuery != null) {
+            runSearchGrounding(defaultQuery)
+        }
+    }
+
+    fun closeSearchGrounding() {
+        _uiState.update { it.copy(isSearchGroundingDialogOpen = false) }
+    }
+
+    fun setSearchGroundingQuery(query: String) {
+        _uiState.update { it.copy(searchGroundingQuery = query) }
+    }
+
+    fun runSearchGrounding(query: String) {
+        if (query.isBlank()) return
+        _uiState.update { it.copy(isSearchGroundingLoading = true, searchGroundingError = null) }
+
+        viewModelScope.launch {
+            val domain = _uiState.value.selectedBottleneck?.targetIndustry ?: "Enterprise Software"
+            val result = searchGroundingRepository.executeSearchGroundedIntelligence(query, domain)
+            result.onSuccess { grounded ->
+                _uiState.update {
+                    it.copy(
+                        isSearchGroundingLoading = false,
+                        groundedSearchResult = grounded,
+                        exportSnackbarMessage = "Live Search Grounded Intelligence Updated"
+                    )
+                }
+            }.onFailure { err ->
+                _uiState.update {
+                    it.copy(
+                        isSearchGroundingLoading = false,
+                        searchGroundingError = err.message ?: "Search grounding query failed"
+                    )
+                }
+            }
+        }
     }
 
     fun syncWithFirestore() {
