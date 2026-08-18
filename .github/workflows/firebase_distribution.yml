@@ -28,6 +28,14 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew || true
 
+      - name: Generate debug keystore
+        run: |
+          if [ ! -f debug.keystore ]; then
+            keytool -genkeypair -v -keystore debug.keystore -storepass android -alias androiddebugkey \
+              -keypass android -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
       - name: Configure google-services.json
         run: |
           if [ -n "${{ secrets.GOOGLE_SERVICES_JSON }}" ]; then
